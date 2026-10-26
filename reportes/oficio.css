@@ -1,0 +1,415 @@
+/* ============================================================================
+   reportes/oficio.css
+   Estilos de la carta-oficio imprimible (formato de carta oficial de la
+   Municipalidad de San Pablo Jocopilas: membrete, fecha, destinatario,
+   cuerpo, firma y pie institucional), en tamaño carta lista para imprimir.
+   ============================================================================ */
+
+:root {
+    --texto: #1a1a1a;
+    --texto-suave: #555;
+    --borde: #999;
+    --fondo-pantalla: #e9e9ec;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--fondo-pantalla);
+    color: var(--texto);
+    line-height: 1.5;
+    padding: 24px 0;
+}
+
+.reporte-shell { max-width: 21.59cm; margin: 0 auto; }
+
+/* Hoja tamaño carta (8.5in x 11in) */
+.carta-pagina {
+    background: #fff;
+    width: 21.59cm;
+    min-height: 27.94cm;
+    margin: 0 auto 24px auto;
+    padding: 1.9cm 2.2cm 3.4cm 2.2cm;
+    box-shadow: 0 2px 10px rgba(0,0,0,.25);
+    font-size: 12.5px;
+    color: var(--texto);
+    position: relative;
+    isolation: isolate; /* crea su propio contexto de apilamiento: la marca de agua queda detrás del texto */
+}
+
+/* Marca de agua: logo de la Municipalidad, opaco, centrado en toda la hoja
+   del oficio (no se aplica a las páginas de anexo de capturas). Se hace por
+   CSS para que también aparezca en los oficios ya editados manualmente. */
+.carta-pagina:not(.anexo-pagina)::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    background-image: url("../assets/img/Logo San Pablo.PNG");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 16cm auto;
+    opacity: 0.09;
+    pointer-events: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* Escudo en la esquina superior derecha (opuesta al logo del membrete, que
+   está en la esquina superior izquierda). Archivo: assets/img/escudo.jpg */
+.carta-pagina:not(.anexo-pagina)::after {
+    content: "";
+    position: absolute;
+    top: 1.9cm;
+    right: 2.2cm;
+    width: 3.6cm;
+    height: 135px;
+    background-image: url("../assets/img/escudo.jpg");
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: contain;
+    pointer-events: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* Membrete */
+.carta-membrete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.membrete-institucion {
+    text-align: center;
+}
+.membrete-linea1 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+}
+.membrete-linea2 {
+    font-size: 11.5px;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+.membrete-linea3 {
+    font-size: 11px;
+    color: var(--texto-suave);
+    margin-top: 4px;
+    font-style: italic;
+}
+.carta-regla {
+    border-bottom: 2px solid var(--texto);
+    margin: 10px 0 26px 0;
+}
+
+/* Fecha y número de oficio */
+.carta-fecha-bloque {
+    text-align: right;
+    margin-bottom: 26px;
+    font-size: 12.5px;
+}
+.carta-num-oficio {
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+/* Destinatario */
+.carta-destinatario { margin-bottom: 22px; }
+.carta-dest-nombre { font-weight: 700; }
+.carta-dest-cargo { font-weight: 700; }
+
+.carta-saludo { margin-bottom: 16px; }
+
+/* Cuerpo */
+.carta-cuerpo p {
+    text-align: justify;
+    text-indent: 1.2cm;
+    margin-bottom: 16px;
+}
+
+.carta-cierre { margin: 8px 0 60px 0; }
+
+/* Firma */
+.carta-firma {
+    text-align: center;
+    width: 60%;
+    margin: 0 auto 40px auto;
+}
+.carta-firma-linea {
+    border-bottom: 1px solid var(--texto);
+    margin-bottom: 4px;
+}
+.carta-firma-nombre { font-weight: 700; }
+.carta-firma-cargo { font-size: 11.5px; }
+
+/* Pie institucional: anclado al fondo físico de la hoja carta */
+.carta-footer {
+    position: absolute;
+    left: 2.2cm;
+    right: 2.2cm;
+    bottom: 1.3cm;
+    text-align: center;
+    font-size: 10.5px;
+    color: var(--texto-suave);
+    font-style: italic;
+    border-top: 1px solid var(--borde);
+    padding-top: 10px;
+}
+.carta-footer div:first-child { font-weight: 700; }
+
+/* ══════════════════════════════════════════════════════════════
+   ANEXO DE FOTOGRAFÍAS Y CAPTURAS — 2×2 por hoja
+   ──────────────────────────────────────────────────────────────
+   Medidas para que 4 imágenes entren en UNA hoja carta
+   (27.94 cm de alto), con holgura:
+     · imagen: 7 cm de alto
+     · padding del anexo: 1.5 cm arriba/abajo
+     · cabecera compacta (título 14 px, subtítulo 10 px)
+     · gap del grid: 8 px
+   Si se cambia alguno, recalcular:
+     27.94 − padding − cabecera ≥ 2 × alto_celda + gap
+   ══════════════════════════════════════════════════════════════ */
+
+.anexo-pagina {
+    padding: 1.5cm 2.2cm 1.5cm 2.2cm;
+}
+
+.anexo-titulo {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+.anexo-sub {
+    font-size: 10px;
+    color: var(--texto-suave);
+    margin-bottom: 10px;
+    line-height: 1.2;
+}
+
+/* Sin subtítulo, el grid queda pegado al título: se separa aquí. */
+.anexo-titulo + .anexo-grid { margin-top: 10px; }
+
+.anexo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    align-content: start;
+}
+
+.anexo-foto-caja {
+    position: relative;
+    border: 1px solid var(--borde);
+    padding: 4px;
+    box-sizing: border-box;
+    /* Una celda nunca se parte entre dos hojas al imprimir. Es una
+       protección (mueve la celda entera a la hoja siguiente en vez de
+       cortar la foto por la mitad), no la causa de que algo se desborde. */
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.anexo-foto-caja img {
+    width: 100%;
+    height: 9.5cm;               /* antes 7cm: 4 imágenes (2×2) llenan la hoja */
+    object-fit: contain;         /* respeta la proporción original */
+    display: block;
+    background: #f4f4f4;
+}
+
+.anexo-foto-num {
+    text-align: center;
+    font-size: 10px;
+    line-height: 1.2;
+    margin-top: 3px;
+    color: var(--texto-suave);
+}
+
+/* Tamaños (ver reportes/redimensionar_captura.php y los botones ➖ / ➕).
+   "mediana" (9.5 cm) es la base y no tiene clase propia. */
+.anexo-foto-caja.anexo-tam-pequena img { height: 4.5cm; }
+.anexo-foto-caja.anexo-tam-grande {
+    grid-column: 1 / -1;         /* ocupa toda la fila */
+}
+.anexo-foto-caja.anexo-tam-grande img { height: 9.7cm; }    /* 2 grandes por hoja (con membrete) */
+
+/* Imagen "centrada" (botón ⤢): 75% del ancho, centrada, misma proporción.
+   Va DESPUÉS de las reglas de tamaño para ganar a igual especificidad. */
+.anexo-foto-caja.anexo-foto-centrada img {
+    width: 75%;
+    height: auto;
+    max-height: 6.5cm;
+    margin: 0.25cm auto;
+    background: transparent;
+}
+
+/* ── Barra de herramientas de cada imagen ─────────────────────────
+   Solo visible en modo "✏️ Editar": reportes/imprimir.php pone la clase
+   "anexo-modo-edicion" en #anexo-evidencia (el anexo completo, fotos y
+   capturas). Nunca se imprime. */
+.anexo-foto-toolbar {
+    display: none;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    gap: 4px;
+    z-index: 5;
+    /* Con tantas herramientas (tamaño + flechas + borrar) la barra puede
+       necesitar más de una fila en imágenes chicas: que haga wrap. */
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 96%;
+}
+
+.anexo-modo-edicion .anexo-foto-toolbar {
+    display: flex;
+}
+.anexo-btn-herramienta {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(20, 20, 20, 0.72);
+    color: #fff;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+.anexo-btn-herramienta:hover { background: rgba(0, 0, 0, 0.88); }
+.anexo-btn-herramienta:disabled { opacity: 0.4; cursor: not-allowed; }
+.anexo-btn-borrar:hover { background: #b00020; }
+
+/* Arrastrar imágenes (estilo Word): solo tiene sentido en modo "✏️ Editar". */
+.anexo-modo-edicion .anexo-foto-caja img {
+    cursor: grab;
+}
+.anexo-modo-edicion .anexo-foto-caja.anexo-arrastrando {
+    cursor: grabbing;
+}
+.anexo-modo-edicion .anexo-foto-caja.anexo-arrastrando img {
+    opacity: 0.4;
+}
+.anexo-modo-edicion .anexo-foto-num[contenteditable="true"] {
+    cursor: text;
+    background: rgba(102, 126, 234, 0.10);
+    border-radius: 3px;
+    padding: 1px 4px;
+    outline: 1px dashed rgba(102, 126, 234, 0.5);
+    outline-offset: 1px;
+}
+.anexo-modo-edicion .anexo-foto-caja.anexo-drop-target {
+    outline: 3px dashed #667eea;
+    outline-offset: 4px;
+    background: rgba(102, 126, 234, 0.08);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ENCABEZADO INSTITUCIONAL DEL ANEXO DE EVIDENCIA
+   ──────────────────────────────────────────────────────────────
+   Se repite en TODAS las hojas del anexo (con logos a los lados), con
+   el mismo tamaño de logo y de texto en todas. El título del anexo
+   tampoco se encoge en ninguna hoja.
+   ══════════════════════════════════════════════════════════════ */
+.anexo-membrete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+.anexo-membrete-logo {
+    height: 65px;
+    width: auto;
+    max-width: 70px;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+.anexo-membrete-centro {
+    flex: 1;
+    text-align: center;
+    min-width: 0;
+}
+.anexo-membrete-linea1 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    color: var(--texto);
+}
+.anexo-membrete-linea2 {
+    font-size: 10px;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    margin-top: 1px;
+}
+.anexo-membrete-linea3 {
+    font-size: 9.5px;
+    color: var(--texto-suave);
+    font-style: italic;
+    margin-top: 2px;
+}
+.anexo-membrete-regla {
+    border-bottom: 1.5px solid var(--texto);
+    margin: 4px 0 10px 0;
+}
+
+/* Todas las hojas del anexo usan el MISMO tamaño de logo (65px). La clase
+   anexo-pagina-continuacion se sigue agregando a partir de la 2da hoja,
+   pero ya no tiene reglas asociadas. */
+
+/* Contador "(página X de Y · N imágenes en total)" junto al título */
+.anexo-titulo-meta {
+    font-size: 11px;
+    font-weight: normal;
+    color: var(--texto-suave);
+    margin-left: 6px;
+}
+
+@media print {
+    /* Fuerza a que los navegadores basados en Chromium/WebKit impriman
+       los colores de fondo tal como se ven en pantalla, sin depender de
+       que el usuario marque la casilla "Gráficos de fondo". */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    /* Tamaño carta explícito y sin márgenes de navegador: así el navegador
+       no reserva espacio propio para encabezado/pie (donde mete la URL,
+       fecha, título, "1/1", etc.) y el layout en cm/absolute de abajo
+       coincide exactamente con la hoja física impresa. */
+    @page {
+        size: letter;
+        margin: 0;
+    }
+    body { background: #fff; padding: 0; }
+    .reporte-shell { max-width: none; }
+    .carta-pagina {
+        box-shadow: none;
+        margin: 0;
+        /* IMPORTANTE: mantener el mismo alto/ancho fijo que en pantalla
+           (NO min-height:auto / width:auto). El pie (.carta-footer) está
+           anclado con position:absolute + bottom respecto a esta caja; si
+           la caja se encoge al tamaño del contenido, el pie sube junto
+           con ella en vez de quedar al fondo real de la hoja carta. */
+        width: 21.59cm;
+        min-height: 27.94cm;
+    }
+    .anexo-pagina { page-break-before: always; }
+    .no-print, .anexo-foto-toolbar { display: none !important; }
+    /* Si se imprime sin salir del modo edición, que no salgan los
+       contornos/fondos de los textos editables. */
+    .anexo-foto-num, .anexo-titulo-texto {
+        outline: none !important;
+        background: none !important;
+    }
+}

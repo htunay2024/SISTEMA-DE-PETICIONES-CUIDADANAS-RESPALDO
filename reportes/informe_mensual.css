@@ -1,0 +1,290 @@
+/* ============================================================================
+   reportes/informe_mensual.css
+   Estilos del "Informe de Peticiones Ciudadanas del WhatsApp Municipal"
+   (reporte mensual imprimible, mismo criterio visual que oficio.css:
+   hoja tamaño carta, membrete institucional, tabla cronológica).
+   ============================================================================ */
+
+:root {
+    --texto: #1a1a1a;
+    --texto-suave: #555;
+    --borde: #999;
+    --fondo-pantalla: #e9e9ec;
+    --azul: #1a3d7c;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--fondo-pantalla);
+    color: var(--texto);
+    line-height: 1.5;
+    padding: 24px 0;
+}
+
+.informe-shell { max-width: 21.59cm; margin: 0 auto; }
+
+.carta-pagina {
+    background: #fff;
+    width: 21.59cm;
+    min-height: 27.94cm;
+    margin: 0 auto 24px auto;
+    padding: 1.9cm 2.2cm 2.2cm 2.2cm;
+    box-shadow: 0 2px 10px rgba(0,0,0,.25);
+    font-size: 12.5px;
+    color: var(--texto);
+    position: relative;
+    /* La hoja es una columna flexible: el bloque de contenido
+       (.carta-contenido) ocupa el espacio disponible y el pie de página
+       se empuja de forma natural hasta el final (ver .informe-pie-pagina
+       más abajo). Antes el pie de página usaba position:absolute con una
+       distancia fija al borde inferior, lo cual en algunos navegadores,
+       al convertir a PDF una hoja cuyo alto real varía (min-height, no
+       height fijo) y que además puede quedar justo en el límite de un
+       salto de página, hacía que el número de página se calculara fuera
+       del área visible y desapareciera del PDF. Con flexbox el pie de
+       página siempre queda dentro del flujo normal del documento, así
+       que no puede "perderse" fuera de la hoja. */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Envuelve todo el contenido de una hoja EXCEPTO el pie de página
+   (.informe-pie-pagina), para que este último quede siempre pegado al
+   final gracias a "flex: 1 0 auto" de aquí abajo. */
+.carta-contenido {
+    flex: 1 0 auto;
+}
+
+.informe-titulo {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    /* Salto de línea visible entre el título y el subtítulo (antes
+       quedaban casi pegados, con solo 4px de separación). */
+    margin-bottom: 14px;
+}
+.informe-subtitulo {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--texto-suave);
+    margin-bottom: 18px;
+}
+.informe-meta { margin-bottom: 4px; }
+.informe-meta strong { font-weight: 700; }
+
+.pagina-nueva {
+    page-break-before: always;
+    margin-top: 24px;
+}
+
+.informe-tabla-titulo {
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.informe-seccion-titulo {
+    font-size: 13.5px;
+    font-weight: 700;
+    text-transform: none;
+    text-align: center;
+    margin: 22px 0 10px 0;
+}
+
+.informe-parrafo {
+    text-align: justify;
+    margin-bottom: 4px;
+}
+.informe-parrafo-reporte {
+    margin-bottom: 14px;
+}
+.informe-parrafo-atencion {
+    margin-top: 14px;
+}
+
+.informe-lista-oficinas {
+    margin: 6px 0 14px 26px;
+}
+.informe-lista-oficinas li { margin-bottom: 2px; }
+
+table.informe-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 18px 0;
+    font-size: 11.5px;
+    /* Permite que la tabla continúe en la siguiente página al imprimir,
+       pero ver reglas de thead/tr más abajo para que no se corte
+       ninguna fila a la mitad entre una página y otra. */
+    page-break-inside: auto;
+    break-inside: auto;
+}
+/* Evita que el encabezado azul (Fecha/Tipo/Descripción/Oficina/Estado)
+   se pierda al saltar de página: el navegador lo vuelve a dibujar en
+   cada página nueva en la que continúe la tabla. */
+table.informe-tabla thead {
+    display: table-header-group;
+}
+table.informe-tabla tfoot {
+    display: table-footer-group;
+}
+/* Corrección principal del bug de impresión: sin esto, una fila que no
+   cabe completa al final de la hoja se divide en dos, mostrando un
+   pedazo de la fila al final de una página y el resto (con celdas en
+   blanco) al inicio de la siguiente. Con esto la fila completa se
+   empuja entera a la página siguiente. */
+table.informe-tabla tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+table.informe-tabla th {
+    background: var(--azul);
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 10.5px;
+    padding: 7px 8px;
+    border: 1px solid var(--azul);
+    text-align: left;
+}
+table.informe-tabla td {
+    padding: 6px 8px;
+    border: 1px solid var(--borde);
+    vertical-align: top;
+}
+table.informe-tabla tr:nth-child(even) td {
+    background: #f5f6f8;
+}
+.informe-tabla .col-fecha { white-space: nowrap; width: 9%; }
+.informe-tabla .col-tipo { width: 18%; }
+.informe-tabla .col-oficina { width: 16%; }
+.informe-tabla .col-estado { width: 13%; white-space: nowrap; }
+
+.informe-vacio {
+    text-align: center;
+    color: var(--texto-suave);
+    font-style: italic;
+    padding: 18px 0;
+}
+
+.informe-firmas {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 46px;
+    gap: 24px;
+}
+.informe-firmas.informe-firmas-una {
+    justify-content: center;
+}
+.informe-firmas.informe-firmas-una .informe-firma {
+    flex: 0 0 auto;
+    min-width: 320px;
+}
+.informe-firma {
+    text-align: center;
+    flex: 1;
+}
+.informe-firma .linea {
+    border-top: 1px solid var(--texto);
+    margin-top: 46px;
+    padding-top: 6px;
+    font-size: 11.5px;
+}
+.informe-firma .cargo {
+    font-size: 10.5px;
+    color: var(--texto-suave);
+}
+
+.informe-pie-pagina {
+    /* Ya no usa position:absolute (ver el comentario en .carta-pagina):
+       al ser el último elemento dentro de la hoja flexible, queda
+       empujado de forma natural hasta el final sin necesidad de
+       calcular distancias al borde de la página. */
+    margin-top: auto;
+    padding-top: 10px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--texto-suave);
+}
+
+/* ---- Controles / formulario de selección (no se imprimen) ---- */
+.no-print { }
+.barra-informe {
+    max-width: 21.59cm;
+    margin: 0 auto 16px auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 14px;
+}
+.barra-informe .campo { display: flex; flex-direction: column; gap: 4px; }
+.barra-informe label { font-size: 11.5px; color: var(--texto-suave); font-weight: 600; }
+.barra-informe select {
+    padding: 8px 10px;
+    border: 1px solid #cfd3da;
+    border-radius: 6px;
+    font-size: 13px;
+    min-width: 140px;
+}
+.barra-informe button, .barra-informe a.btn {
+    padding: 9px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-generar { background: #1a3d7c; color: #fff; }
+.btn-imprimir { background: #2e7d32; color: #fff; }
+.btn-volver { background: #495057; color: #fff; }
+
+@media print {
+    /* Fuerza a que los navegadores basados en Chromium/WebKit impriman
+       los colores de fondo (encabezado azul y filas alternadas de la
+       tabla) tal como se ven en pantalla, sin depender de que el usuario
+       marque la casilla "Gráficos de fondo" en el diálogo de impresión. */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    /* El encabezado/pie que agrega el propio navegador (fecha, título de
+       la pestaña, URL y numeración) se controla desde la opción
+       "Encabezados y pies de página" del diálogo de impresión del
+       navegador: una página web no puede desactivarlo por sí misma. Para
+       que no se dupliquen datos, esta hoja de estilos deja el margen de
+       impresión (@page) en 0 y coloca su propia paginación
+       (.informe-pie-pagina, ver informe_mensual.php) dentro del área
+       imprimible; conviene desmarcar esa opción en el navegador para que
+       no aparezcan ambas numeraciones a la vez. */
+    @page {
+        size: letter;
+        margin: 0;
+    }
+    body { padding: 0; background: #fff; }
+    .no-print { display: none !important; }
+    .carta-pagina { box-shadow: none; margin: 0 auto; }
+
+    /* El margen superior de 24px en .pagina-nueva es solo un separador
+       visual entre las "hojas" mientras se ven en pantalla (una arriba
+       de otra). Al imprimir cada .pagina-nueva ya empieza en una hoja
+       física nueva por el page-break-before, así que ese margen no debe
+       sumarse: si se deja, el alto total de la hoja pasa de 27.94cm más
+       esos 24px, lo que puede desbordar apenas lo suficiente para
+       empujar el pie de página fuera del área imprimible en algunos
+       navegadores. */
+    .pagina-nueva { margin-top: 0; }
+}
