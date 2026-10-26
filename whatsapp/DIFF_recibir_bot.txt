@@ -1,0 +1,79 @@
+--- /home/claude/proyecto/sistema-web/whatsapp/recibir_bot.php	2026-08-03 11:33:48.000000000 +0000
++++ /home/claude/proyecto_fix/sistema-web/whatsapp/recibir_bot.php	2026-08-03 18:29:08.327221372 +0000
+@@ -339,6 +339,19 @@
+         'petición', 'gustaria', 'gustaría', 'mande', 'manda', 'nose',
+         'sabe', 'se', 'me', 'te', 'lo', 'ni', 'pero', 'cancelar',
+         'modificar', 'confirmar',
++        // AGREGADO: conectores/preposiciones que NO son parte de un nombre.
++        // Antes faltaban aquí, así que frases como "soy Yolanda Salazar y
++        // aquí en mi casa..." pasaban la validación completas (todas sus
++        // palabras son solo letras, así que sin este filtro parecían un
++        // nombre válido de 5 palabras). NOTA: a propósito NO se incluyen
++        // "de", "del", "la", "el", "los", "las": son partículas normales de
++        // apellidos compuestos en español (ej. "De León", "de la Cruz",
++        // "del Valle"), así que rechazarlas rompería nombres reales.
++        'y', 'en', 'aqui', 'aquí',
++        'un', 'una', 'unos', 'unas', 'mi', 'mis', 'tu', 'tus', 'su', 'sus',
++        'con', 'sin', 'sobre', 'desde', 'hasta', 'ubicado', 'ubicada',
++        'ubicados', 'ubicadas', 'vivo', 'vivimos', 'vive', 'viven',
++        'queda', 'quedamos', 'casa',
+     ];
+ 
+     foreach ($palabras as $palabra) {
+@@ -414,14 +427,52 @@
+  * ─────────────────────────────────────────────────────────────────────
+  */
+ function extraerNombreDeTexto($t) {
+-    if (preg_match('/(?:mi\s+nombre\s+(?:completo\s+)?es|me\s+llamo|soy)\s+(\p{L}[\p{L}\'\-]*(?:\s+\p{L}[\p{L}\'\-]*){0,4})/iu', $t, $m)) {
+-        return trim($m[1]);
++    if (!preg_match('/(?:mi\s+nombre\s+(?:completo\s+)?es|me\s+llamo|soy)\s+(\p{L}[\p{L}\'\-]*(?:\s+\p{L}[\p{L}\'\-]*){0,6})/iu', $t, $m)) {
++        return null;
+     }
+-    return null;
++
++    // CORREGIDO: antes esta función tomaba "a lo bruto" hasta 5 palabras
++    // después de "soy"/"me llamo"/etc., sin importar qué fueran. Con un
++    // mensaje como "soy Yolanda Salazar y aquí en mi casa ubicada en...",
++    // el resultado era "Yolanda Salazar y aquí en" (el nombre real más 3
++    // palabras de la frase siguiente pegadas como si fueran parte del
++    // nombre). Ahora se corta la captura en la primera palabra que sea un
++    // conector/preposición típico de que ya terminó el nombre y empezó
++    // otra idea (dirección, explicación del problema, etc.). A propósito
++    // NO se incluyen "de", "del", "la", "el", "los", "las": son partículas
++    // normales de apellidos compuestos en español (ej. "De León",
++    // "de la Cruz", "del Valle") y cortar ahí rompería nombres reales.
++    static $CORTE_NOMBRE = [
++        'y', 'en', 'un', 'una',
++        'unos', 'unas', 'aqui', 'aquí', 'mi', 'mis', 'tu', 'tus', 'su',
++        'sus', 'que', 'qué', 'donde', 'dónde', 'con', 'sin', 'sobre',
++        'desde', 'hasta', 'para', 'por', 'porque', 'como', 'cómo',
++        'ubicado', 'ubicada', 'ubicados', 'ubicadas', 'vivo', 'vivimos',
++        'vive', 'viven', 'queda', 'quedamos', 'casa', 'tengo', 'tenemos',
++        'no', 'hay', 'es', 'esta', 'está',
++    ];
++
++    $palabras = preg_split('/\s+/u', trim($m[1]));
++    $nombrePalabras = [];
++    foreach ($palabras as $palabra) {
++        if (in_array(normalizarParaFiltro($palabra), $CORTE_NOMBRE, true)) break;
++        $nombrePalabras[] = $palabra;
++        if (count($nombrePalabras) >= 5) break; // tope: nombre + hasta 4 apellidos
++    }
++
++    if (count($nombrePalabras) === 0) return null;
++    return trim(implode(' ', $nombrePalabras));
+ }
+ 
+ function extraerDireccionDeTexto($t) {
+-    if (preg_match('/(?:en\s+la|en\s+el|direcci[oó]n\s*:?|vivo\s+en|ubicado\s+en|queda\s+en|frente\s+a|cerca\s+de|por\s+la|por\s+el)\s+([^.,;]{5,100})/iu', $t, $m)) {
++    // CORREGIDO: la lista de disparadores solo incluía "ubicado en"
++    // (masculino). Un mensaje con "mi casa ubicada EN Caserío la Flor"
++    // (femenino) no hacía match con ninguna opción del patrón, así que la
++    // dirección nunca se detectaba sola en el mensaje inicial y el bot
++    // terminaba preguntándola de nuevo aunque el ciudadano ya la había
++    // dado. Se agregan las variantes femeninas/plurales y un par de
++    // disparadores adicionales comunes (situado/situada, localizado/a).
++    if (preg_match('/(?:en\s+la|en\s+el|direcci[oó]n\s*:?|vivo\s+en|ubicad[oa]s?\s+en|situad[oa]s?\s+en|localizad[oa]s?\s+en|queda\s+en|frente\s+a|cerca\s+de|por\s+la|por\s+el)\s+([^.,;]{5,100})/iu', $t, $m)) {
+         return trim($m[1]);
+     }
+     return null;
