@@ -1,0 +1,8 @@
+{
+  "rol": "primario",
+  "peer_ip": "100.89.45.7",
+  "peer_port": 3001,
+  "secreto": "CAMBIA_ESTO_POR_ALGO_LARGO_UNICO_SYNC_2026",
+  "intervalo_ping_seg": 20,
+  "fallos_para_activar": 4
+}
